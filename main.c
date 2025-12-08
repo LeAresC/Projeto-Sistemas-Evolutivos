@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#include "mapa.h"
 #define POPSIZE 100 // Tamanho da população
 #define INDSIZE 20  // Tamanho do indivíduo
 #define NGEN 100    // Número de gerações
@@ -30,13 +30,5 @@ int **GerarPopulacao(int TamPop, int TamInd)
 int main()
 {
     int **pop = GerarPopulacao(POPSIZE, INDSIZE);
-    for (int i = 0; i < POPSIZE; i++)
-    {
-        for (int j = 0; j < INDSIZE; j++)
-        {
-            printf("%d ", pop[i][j]);
-        }
-        printf("\n");
-    }
     return 0;
 }

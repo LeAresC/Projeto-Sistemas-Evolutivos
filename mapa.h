@@ -1,0 +1,1 @@
+int** criarMapaZero(int ordem);
