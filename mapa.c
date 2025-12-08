@@ -12,7 +12,7 @@ int** criarMapaZero(int ordem){ //cria um mapa que será matriz de ordem [ordem]
 void randomizarMapa(int** mapa, int ordem){ //
     for(int i = 0; i<ordem; i++){
         for (int j = 0; j< ordem; j++){
-            mapa[i][j] = 
+            mapa[i][j] = 1;
         }
     }
 }
