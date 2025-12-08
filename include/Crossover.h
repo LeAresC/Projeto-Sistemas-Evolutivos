@@ -1,0 +1,1 @@
+void AplicarCrossover(int *pai1, int *pai2, int indsize);
