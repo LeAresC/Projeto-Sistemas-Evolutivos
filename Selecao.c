@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 int *torneio(int **pop, int popsize, int *fitness, int indsize)
 {
     int index_1 = rand() % popsize;
