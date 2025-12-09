@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <math.h>
 void AplicarMutacao(int *individuo, int pmt, int indsize)
 {
     for(int i = 0; i < indsize; i++)

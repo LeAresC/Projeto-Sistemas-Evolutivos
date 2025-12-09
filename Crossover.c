@@ -1,5 +1,5 @@
 #include <stdlib.h>
-
+#include <math.h>
 void AplicarCrossover(int *pai1, int *pai2, int indsize)
 {
     int *filho1 = (int *)malloc(sizeof(int) * indsize);
