@@ -3,10 +3,10 @@
 #include "mapa.h"
 #include "Dijkstra.h"
 #include "Evolucao.h"
-#define POPSIZE 100 // Tamanho da população
-#define INDSIZE 20  // Tamanho do indivíduo
-#define NGEN 100    // Número de gerações
-#define PCR 50       // Probabilidade de crossover
+#define POPSIZE 1000 // Tamanho da população
+#define INDSIZE 15  // Tamanho do indivíduo
+#define NGEN 1   // Número de gerações
+#define PCR 50      // Probabilidade de crossover
 #define PMT 2       // Probabilidade de mutação
 #define TAMANHOMAPA 5
 
@@ -33,26 +33,37 @@ int **GerarPopulacao(int TamPop, int TamInd)
 int main()
 {
     int **pop = GerarPopulacao(POPSIZE, INDSIZE);
-    int mapa[5][5];
-    for(int i  =0; i < 5; i++){
-        for(int j = 0; j < 5; j++){
-            scanf("%d", mapa[i][j]);
+    int **mapa = malloc(sizeof(int*) * 5);
+    for (int i = 0; i < 5; i++)
+    {
+        mapa[i] = malloc(sizeof(int)*5);
+        for (int j = 0; j < 5; j++)
+        {
+            scanf("%d", &mapa[i][j]);
         }
     }
     int dest_x = TAMANHOMAPA - 1;
     int dest_y = TAMANHOMAPA - 1;
     int **dist = gerarMapaDist(TAMANHOMAPA, mapa, dest_x, dest_y);
-    for(int i = 0; i < NGEN; i++)
+    int mn = 1e9;
+    for (int i = 0; i < NGEN; i++)
     {
         ExecucaoAlgoritmo(pop, mapa, dist, POPSIZE, INDSIZE, TAMANHOMAPA, dest_x, dest_y, PCR, PMT);
+        for (int j = 0; j < POPSIZE; j++)
+        {
+            int aux = determinarfitness(pop[j], dist, mapa, INDSIZE, TAMANHOMAPA, dest_x, dest_y);
+            if(aux < mn){
+                mn = aux;
+            }
+        }
     }
-
-    for(int i = 0; i < POPSIZE; i++)
+    printf("%d\n", mn);
+    for (int i = 0; i < POPSIZE; i++)
     {
         free(pop[i]);
     }
     free(pop);
-    for(int i  = 0; i < TAMANHOMAPA; i++)
+    for (int i = 0; i < TAMANHOMAPA; i++)
     {
         free(mapa[i]);
     }

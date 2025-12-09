@@ -1,4 +1,5 @@
 #include "heap.h"
+#include <stdlib.h>
 #define INF 1e9
 
 int dx[] = {0, 1, 0, -1};

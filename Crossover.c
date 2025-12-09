@@ -31,4 +31,6 @@ void AplicarCrossover(int *pai1, int *pai2, int indsize)
         pai1[i] = filho1[i];
         pai2[i] = filho2[i];
     }
+    free(filho1);
+    free(filho2);
 }
