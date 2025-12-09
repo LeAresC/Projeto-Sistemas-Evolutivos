@@ -113,6 +113,16 @@ void passoDaSimulacao(int value) {
         }
     }
 
+    // Calcula média de fitness da população
+    long soma_fitness = 0;
+    for(int i=0; i<POPSIZE; i++) {
+        soma_fitness += determinarfitness(pop[i], mapa, dist, INDSIZE, TAMANHOMAPA, dest_x, dest_y);
+    }
+    int media_fitness = (int)(soma_fitness / POPSIZE);
+
+    // Registra no histórico para o gráfico
+    registrarFitnessGeracao(melhor_fit_local, media_fitness);
+
     // Se achou um recorde global, atualiza e manda pra interface!
     if (melhor_fit_local < MelhorFitnessGlobal) {
         MelhorFitnessGlobal = melhor_fit_local;
@@ -176,6 +186,7 @@ void iniciarSimulacao() {
         geracao_atual = 0;
         tentativa_atual = 0;
         MelhorFitnessGlobal = 1e9;
+        resetarHistoricoFitness();  // Limpa gráficos anteriores
         printf("=== SIMULAÇÃO INICIADA ===\n");
         glutTimerFunc(1, passoDaSimulacao, 0); // Começa o loop
     }

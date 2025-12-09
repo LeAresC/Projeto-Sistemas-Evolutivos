@@ -28,4 +28,10 @@ void timer(int value);
 // Inicia a simulação (chamada pelo botão INICIAR)
 void iniciarSimulacao(void);
 
+// Registra fitness do melhor e média da população em cada geração
+void registrarFitnessGeracao(int fitnessMelhor, int fitnessMedia);
+
+// Reseta o histórico de fitness (chamado ao iniciar nova simulação)
+void resetarHistoricoFitness(void);
+
 #endif // INTERFACE_H

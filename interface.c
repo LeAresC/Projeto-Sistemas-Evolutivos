@@ -21,6 +21,12 @@ int respeitaObs = 1; // 1 = Sim, 0 = Não
 float corBotao[3] = {0.3, 0.3, 0.3};
 float corTexto[3] = {1.0, 1.0, 1.0};
 
+// --- HISTÓRICO DE FITNESS ---
+#define MAX_HISTORICO 2000  // Máximo de gerações a registrar
+int historicoFitnessMelhor[MAX_HISTORICO];
+int historicoFitnessMedia[MAX_HISTORICO];
+int tamanhoHistorico = 0;  // Quantidade de gerações registradas
+
 // --- FUNÇÕES AUXILIARES DE DESENHO UI ---
 
 void desenhaTexto(float x, float y, const char *string) {
@@ -119,6 +125,94 @@ void desenhaCaminhoOverlay(int ordem) {
 
 void display(int ordem) {
     glClear(GL_COLOR_BUFFER_BIT);
+
+    // --- GRÁFICOS DE FITNESS (NO TOPO) ---
+    float graphW = AREA_MAPA / 2 - 5;  // Metade da largura do mapa, com margem
+    float graphH = 100;
+
+    // Gráfico 1: Melhor Fitness (em verde) - Lado esquerdo
+    float graph1X = 5;
+    float graph1Y = ALTURA_JANELA - graphH - 10;
+
+    // Fundo
+    glColor3f(0.05, 0.05, 0.05);
+    glRectf(graph1X, graph1Y, graph1X + graphW, graph1Y + graphH);
+
+    // Borda
+    glColor3f(0.5, 0.5, 0.5);
+    glLineWidth(1);
+    glBegin(GL_LINE_LOOP);
+    glVertex2f(graph1X, graph1Y);
+    glVertex2f(graph1X + graphW, graph1Y);
+    glVertex2f(graph1X + graphW, graph1Y + graphH);
+    glVertex2f(graph1X, graph1Y + graphH);
+    glEnd();
+
+    // Título
+    glColor3f(0.0, 1.0, 0.0);
+    desenhaTexto(graph1X + 10, graph1Y + graphH - 15, "Melhor Fit");
+
+    // Desenha o gráfico
+    if (tamanhoHistorico > 1) {
+        int minF = historicoFitnessMelhor[0], maxF = historicoFitnessMelhor[0];
+        for (int i = 0; i < tamanhoHistorico; i++) {
+            if (historicoFitnessMelhor[i] < minF) minF = historicoFitnessMelhor[i];
+            if (historicoFitnessMelhor[i] > maxF) maxF = historicoFitnessMelhor[i];
+        }
+        int range = (maxF > minF) ? (maxF - minF) : 1;
+
+        glColor3f(0.0, 1.0, 0.0);
+        glLineWidth(2);
+        glBegin(GL_LINE_STRIP);
+        for (int i = 0; i < tamanhoHistorico; i++) {
+            float px = graph1X + 3 + (i / (float)(tamanhoHistorico - 1)) * (graphW - 6);
+            float py = graph1Y + 20 + (graphH - 30) * (1.0f - (historicoFitnessMelhor[i] - minF) / (float)range);
+            glVertex2f(px, py);
+        }
+        glEnd();
+    }
+
+    // Gráfico 2: Média de Fitness (em azul) - Lado direito
+    float graph2X = graph1X + graphW + 10;
+    float graph2Y = graph1Y;
+
+    // Fundo
+    glColor3f(0.05, 0.05, 0.05);
+    glRectf(graph2X, graph2Y, graph2X + graphW, graph2Y + graphH);
+
+    // Borda
+    glColor3f(0.5, 0.5, 0.5);
+    glLineWidth(1);
+    glBegin(GL_LINE_LOOP);
+    glVertex2f(graph2X, graph2Y);
+    glVertex2f(graph2X + graphW, graph2Y);
+    glVertex2f(graph2X + graphW, graph2Y + graphH);
+    glVertex2f(graph2X, graph2Y + graphH);
+    glEnd();
+
+    // Título
+    glColor3f(0.0, 0.8, 1.0);
+    desenhaTexto(graph2X + 10, graph2Y + graphH - 15, "Média Fit");
+
+    // Desenha o gráfico
+    if (tamanhoHistorico > 1) {
+        int minF = historicoFitnessMedia[0], maxF = historicoFitnessMedia[0];
+        for (int i = 0; i < tamanhoHistorico; i++) {
+            if (historicoFitnessMedia[i] < minF) minF = historicoFitnessMedia[i];
+            if (historicoFitnessMedia[i] > maxF) maxF = historicoFitnessMedia[i];
+        }
+        int range = (maxF > minF) ? (maxF - minF) : 1;
+
+        glColor3f(0.0, 0.8, 1.0);
+        glLineWidth(2);
+        glBegin(GL_LINE_STRIP);
+        for (int i = 0; i < tamanhoHistorico; i++) {
+            float px = graph2X + 3 + (i / (float)(tamanhoHistorico - 1)) * (graphW - 6);
+            float py = graph2Y + 20 + (graphH - 30) * (1.0f - (historicoFitnessMedia[i] - minF) / (float)range);
+            glVertex2f(px, py);
+        }
+        glEnd();
+    }
 
     // 1. DESENHAR O MAPA
     for (int i = 0; i < ordem; i++) {
@@ -339,4 +433,22 @@ void init(int **mapa, int ordem) {
     
     srand(42);
     meuMapa = mapa;
+}
+
+// --- FUNÇÕES DE HISTÓRICO DE FITNESS ---
+
+void registrarFitnessGeracao(int fitnessMelhor, int fitnessMedia) {
+    if (tamanhoHistorico < MAX_HISTORICO) {
+        historicoFitnessMelhor[tamanhoHistorico] = fitnessMelhor;
+        historicoFitnessMedia[tamanhoHistorico] = fitnessMedia;
+        tamanhoHistorico++;
+    }
+}
+
+void resetarHistoricoFitness(void) {
+    tamanhoHistorico = 0;
+    for (int i = 0; i < MAX_HISTORICO; i++) {
+        historicoFitnessMelhor[i] = 0;
+        historicoFitnessMedia[i] = 0;
+    }
 }
