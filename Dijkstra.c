@@ -33,7 +33,7 @@ int **gerarMapaDist(int tamanhoMapa, int **mapa, int ini_x, int ini_y)
             int yf = at.y + v;
             if (xf < tamanhoMapa && xf >= 0 && yf < tamanhoMapa && yf >= 0 && mapa[xf][yf] != -1)
             {
-                if (mapaDist[at.x][at.y] + at.custo < mapaDist[xf][yf])
+                if (mapa[xf][yf] + at.custo < mapaDist[xf][yf])
                 {
                     pq_push(xf, yf, mapaDist[xf][yf] = at.custo + mapa[xf][yf]);
                 }
