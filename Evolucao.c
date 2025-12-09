@@ -1,6 +1,6 @@
 #define PENALIDADE_MORTE 1000000
 #define PENALIDADE_NAO_CHEGOU 500000
-#define JANELA_ESTAGNACAO 20
+#define JANELA_ESTAGNACAO 50
 #define TAXA_CHOQUE 30
 #include <math.h>
 #include <stdlib.h>
@@ -70,7 +70,7 @@ int determinarfitness(int *individuo, int **mapa, int **dist, int indsize, int t
 }
 
 // --- CORREÇÃO 2: Gestão de Memória e Fluxo de Geração ---
-void ExecucaoAlgoritmo(int **pop, int **mapa, int **dist, int popsize, int indsize, int tamanhoMapa, int dest_x, int dest_y, int pcr, int pmt)
+void ExecucaoAlgoritmo(int **pop, int **mapa, int **dist, int popsize, int indsize, int tamanhoMapa, int dest_x, int dest_y, int pcr, int *pmt)
 {
     int *fitness = (int *)malloc(sizeof(int) * popsize);
 
@@ -84,7 +84,7 @@ void ExecucaoAlgoritmo(int **pop, int **mapa, int **dist, int popsize, int indsi
     // 1. Avaliação e Elitismo
     int melhor_fitness = 1e9 + 7;
     int melhor_indice = 0;
-    #pragma omp parallel for
+#pragma omp parallel for
     for (int i = 0; i < popsize; i++)
     {
         // Atenção à ordem dos parametros: mapa, depois dist
@@ -107,8 +107,8 @@ void ExecucaoAlgoritmo(int **pop, int **mapa, int **dist, int popsize, int indsi
     }
     if (ESTAGNADO >= JANELA_ESTAGNACAO)
     {
-        pmt = TAXA_CHOQUE;  
-        ESTAGNADO = 0; 
+        *pmt = TAXA_CHOQUE;
+        ESTAGNADO = 0;
     }
     printf("Melhor Fitness: %d\n", melhor_fitness); // Debug útil
 
@@ -146,10 +146,10 @@ void ExecucaoAlgoritmo(int **pop, int **mapa, int **dist, int popsize, int indsi
         }
 
         // Aplica Mutação (Nos filhos)
-        AplicarMutacao(newpop[cnt], pmt, indsize);
+        AplicarMutacao(newpop[cnt], *pmt, indsize);
         if (cnt + 1 < popsize)
         {
-            AplicarMutacao(newpop[cnt + 1], pmt, indsize);
+            AplicarMutacao(newpop[cnt + 1], *pmt, indsize);
         }
 
         cnt += 2; // Avança 2 posições
@@ -164,7 +164,7 @@ void ExecucaoAlgoritmo(int **pop, int **mapa, int **dist, int popsize, int indsi
         }
         free(newpop[i]); // Libera a linha auxiliar
     }
-
+    *pmt = 3;
     free(newpop); // Libera o vetor de ponteiros
     free(fitness);
 }

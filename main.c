@@ -7,13 +7,13 @@
 #include "Evolucao.h"
 #include "interface.h"
 
-#define POPSIZE 200     // Tamanho da população
-#define INDSIZE 100     // Tamanho do indivíduo (Combustível suficiente)
-#define NGEN 150        // Número de gerações
+#define POPSIZE 500     // Tamanho da população
+#define INDSIZE 50     // Tamanho do indivíduo 
+#define NGEN 1000        // Número de gerações
 #define PCR 80          // Probabilidade de crossover
-#define PMT 5           // Probabilidade de mutação
-#define TAMANHOMAPA 10
-#define NUM_TENTATIVAS 10 // Quantas vezes vamos rodar do zero
+#define PMT 3           // Probabilidade de mutação
+#define TAMANHOMAPA 15
+#define NUM_TENTATIVAS 1 // Quantas vezes vamos rodar do zero
 
 // --- ESTADO GLOBAL DA SIMULAÇÃO ---
 // Precisamos disso global para persistir entre os frames da animação
@@ -29,6 +29,7 @@ int geracao_atual = 0;
 int tentativa_atual = 0;
 int simulacao_rodando = 0; // 1 = Sim, 0 = Pausada/Terminou
 int simulacao_iniciada = 0; // 1 = Usuário clicou em INICIAR
+int taxa_atual = PMT;
 
 // Função auxiliar para imprimir o melhor caminho no final
 void ImprimirMelhorCaminho(int *ind, int tamanho, int **mapa) {
@@ -98,7 +99,7 @@ void passoDaSimulacao(int value) {
 
     // --- RODA 1 GERAÇÃO ---
     // (Ajuste a taxa de mutação conforme sua lógica original se necessário)
-    ExecucaoAlgoritmo(pop, mapa, dist, POPSIZE, INDSIZE, TAMANHOMAPA, dest_x, dest_y, PCR, PMT);
+    ExecucaoAlgoritmo(pop, mapa, dist, POPSIZE, INDSIZE, TAMANHOMAPA, dest_x, dest_y, PCR, &taxa_atual);
     
     // --- ATUALIZA MELHOR LOCAL E GLOBAL ---
     int melhor_fit_local = 1e9;

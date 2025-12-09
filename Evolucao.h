@@ -1,2 +1,2 @@
-void ExecucaoAlgoritmo(int **pop, int **mapa, int **dist, int popsize, int indsize, int tamanhoMapa, int dest_x, int dest_y, int pcr, int pmt);
+void ExecucaoAlgoritmo(int **pop, int **mapa, int **dist, int popsize, int indsize, int tamanhoMapa, int dest_x, int dest_y, int pcr, int *pmt);
 int determinarfitness(int *individuo, int **dist, int **mapa, int indsize, int tamanhoMapa, int dest_x, int dest_y);
