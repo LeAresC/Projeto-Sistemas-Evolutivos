@@ -30,4 +30,7 @@ void blocoSombra(int** mapa, int ordemMapa, int ordemBloco, int coordx, int coor
 // Gera um caminho ótimo em zig-zag (tipo L com variação) entre src e dest
 void gerarOtimoZigZag(int** mapa, int ordem, int srcCoordX, int srcCoordY, int destCoordX, int destCoordY);
 
+//Preenche um bloco com luz 
+void blocoLuz(int** mapa, int ordemMapa, int ordemBloco, int coordx, int coordy, int intensidade, int respeitaObst);
+
 #endif // MAPA_H

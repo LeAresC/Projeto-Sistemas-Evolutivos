@@ -20,6 +20,31 @@ void randomizaMapa(int** mapa, int ordem){ //recebe um mapa e coloca valores ale
     }
 }
 
+void blocoLuz(int** mapa, int ordemMapa, int ordemBloco, int coordx, int coordy, int intensidade, int respeitaObst) {
+    
+    // Garante que a intensidade esteja entre 0 (escuro) e 10 (claro)
+    if (intensidade < 0) intensidade = 0;
+    if (intensidade > 10) intensidade = 10;
+
+    for (int i = coordx; i < coordx + ordemBloco; i++) {
+        for (int j = coordy; j < coordy + ordemBloco; j++) {
+            
+            // Verifica limites do mapa
+            if (i < 0 || i >= ordemMapa || j < 0 || j >= ordemMapa)
+                continue;
+
+            
+            if(respeitaObst){
+                // Preserva obstáculos (-1)
+                if (mapa[i][j] == -1)
+                    continue;
+            }
+
+            // Aplica a intensidade definida
+            mapa[i][j] = intensidade;
+        }
+    }
+}
 
 void focoDeLuz(int** mapa, int ordemMapa, int ordemBloco, int coordx, int coordy) {
 
@@ -133,6 +158,8 @@ void obstaculo(int** mapa, int ordem, int i, int j) {
         mapa[i][j] = -1;
     }
 }
+
+
 
 void blocoSombra(int** mapa, int ordemMapa, int ordemBloco, int coordx, int coordy) {
 
