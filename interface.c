@@ -8,6 +8,8 @@
 int** meuMapa;
 // 1=Bloco Luz, 2=Foco Luz, 3=Bloco Solido, 4=Barreira, 5=Ponto, 6=Sombra, 7=ZigZag
 int ferramentaAtual = 0; 
+int *caminhoAtual = NULL; // Ponteiro para os genes do melhor indivíduo atual
+int tamanhoCaminho = 0;
 
 // Parâmetros Configuráveis (Inputs)
 int paramTamanho = 5;
@@ -66,18 +68,65 @@ int checaColisao(int mx, int my, float x, float y, float w, float h) {
     return (mx >= x && mx <= x + w && my >= y && my <= y + h);
 }
 
+// --- Função para o Main mandar o indivíduo para a Interface ---
+void setCaminhoVisualizacao(int *genes, int tamanhoIndividuo) {
+    // Se ainda não alocamos memória, aloca agora (ou usa realloc se tamanho mudar)
+    if (caminhoAtual == NULL) {
+        caminhoAtual = (int*)malloc(sizeof(int) * tamanhoIndividuo);
+        tamanhoCaminho = tamanhoIndividuo;
+    }
+    
+    // Copia os genes para evitar problemas de memória
+    for(int i=0; i<tamanhoIndividuo; i++) {
+        caminhoAtual[i] = genes[i];
+    }
+}
+
+// --- Função Auxiliar de Desenho do Caminho ---
+void desenhaCaminhoOverlay(int ordem) {
+    if (caminhoAtual == NULL) return;
+
+    int x = 0; // Posição inicial (ajuste se seu start não for 0,0)
+    int y = 0;
+    
+    // Configura visual (ex: linha amarela grossa)
+    glLineWidth(3.0);
+    glColor3f(1.0, 1.0, 0.0); // Amarelo
+
+    glBegin(GL_LINE_STRIP); // GL_LINE_STRIP conecta os pontos
+    
+    // Mapeia coordenadas da matriz para pixels (centro da célula)
+    float cellW = (float)AREA_MAPA / ordem;
+    float cellH = (float)AREA_MAPA / ordem;
+    
+    // Ponto inicial (centro da célula 0,0)
+    glVertex2f((x + 0.5f) * cellW, (y + 0.5f) * cellH);
+
+    for (int i = 0; i < tamanhoCaminho; i++) {
+        // Interpreta o gene (0=Cima, 1=Dir, 2=Baixo, 3=Esq) - Ajuste conforme sua lógica
+        if (caminhoAtual[i] == 0) x--;      // Cima
+        else if (caminhoAtual[i] == 1) y++; // Dir
+        else if (caminhoAtual[i] == 2) x++; // Baixo
+        else if (caminhoAtual[i] == 3) y--; // Esq
+
+        // Desenha vértice no centro da nova célula
+        glVertex2f((x + 0.5f) * cellW, (y + 0.5f) * cellH);
+    }
+    glEnd();
+}
+
 // --- DESENHO PRINCIPAL ---
 
-void display() {
+void display(int ordem) {
     glClear(GL_COLOR_BUFFER_BIT);
 
     // 1. DESENHAR O MAPA
-    for (int i = 0; i < TAM_MAPA; i++) {
-        for (int j = 0; j < TAM_MAPA; j++) {
+    for (int i = 0; i < ordem; i++) {
+        for (int j = 0; j < ordem; j++) {
             int valor = meuMapa[i][j];
-            float px = (float)i * (AREA_MAPA / TAM_MAPA);
-            float py = (float)j * (AREA_MAPA / TAM_MAPA);
-            float tamCel = (float)AREA_MAPA / TAM_MAPA;
+            float px = (float)i * (AREA_MAPA / ordem);
+            float py = (float)j * (AREA_MAPA / ordem);
+            float tamCel = (float)AREA_MAPA / ordem;
 
             if (valor == -1) glColor3f(0.7, 0.1, 0.1); // Obstáculo
             else {
@@ -87,6 +136,9 @@ void display() {
             glRectf(px, py, px + tamCel - 1, py + tamCel - 1);
         }
     }
+
+    //desenha o individuo
+    desenhaCaminhoOverlay(ordem);
 
     // 2. DESENHAR O PAINEL LATERAL
     glColor3f(0.2, 0.2, 0.2);
@@ -165,6 +217,8 @@ void display() {
 
     // -- BOTÕES GERAIS --
     uiY = 80;
+    desenhaBotao(uiX, uiY, 160, 30, "INICIAR SIMULACAO", 0);
+    uiY -= 40;
     desenhaBotao(uiX, uiY, 160, 30, "RANDOMIZAR MAPA", 0);
     uiY -= 40;
     desenhaBotao(uiX, uiY, 160, 30, "LIMPAR TUDO", 0);
@@ -174,28 +228,28 @@ void display() {
 
 // --- LÓGICA DE INTERAÇÃO ---
 
-void mouse(int button, int state, int x, int y) {
+void mouse(int button, int state, int x, int y, int ordem) {
     if (state != GLUT_DOWN) return;
 
     int glY = ALTURA_JANELA - y;
 
     // CASO 1: CLIQUE NO MAPA
     if (x < AREA_MAPA) {
-        int gridX = (x * TAM_MAPA) / AREA_MAPA;
-        int gridY = (glY * TAM_MAPA) / AREA_MAPA;
+        int gridX = (x * ordem) / AREA_MAPA;
+        int gridY = (glY * ordem) / AREA_MAPA;
 
-        if (gridX >= 0 && gridX < TAM_MAPA && gridY >= 0 && gridY < TAM_MAPA) {
+        if (gridX >= 0 && gridX < ordem && gridY >= 0 && gridY < ordem) {
             printf("Mapa [%d][%d] Ferramenta %d\n", gridX, gridY, ferramentaAtual);
 
             switch(ferramentaAtual) {
                 // Certifique-se que blocoLuz aceita 7 argumentos no mapa.c ou remova respeitaObs se não existir
-                case 1: blocoLuz(meuMapa, TAM_MAPA, paramTamanho, gridX, gridY, paramIntensidade, respeitaObs); break; 
-                case 2: focoDeLuz(meuMapa, TAM_MAPA, paramTamanho, gridX, gridY); break;
-                case 3: obstaculoBloco(meuMapa, TAM_MAPA, paramTamanho, gridX, gridY); break;
-                case 4: obstaculoBarreira(meuMapa, TAM_MAPA, paramTamanho, gridX, gridY, paramDirecao); break;
-                case 5: obstaculo(meuMapa, TAM_MAPA, gridX, gridY); break;
-                case 6: blocoSombra(meuMapa, TAM_MAPA, paramTamanho, gridX, gridY); break;
-                case 7: gerarOtimoZigZag(meuMapa, TAM_MAPA, 0, 0, gridX, gridY); break;
+                case 1: blocoLuz(meuMapa, ordem, paramTamanho, gridX, gridY, paramIntensidade, respeitaObs); break; 
+                case 2: focoDeLuz(meuMapa, ordem, paramTamanho, gridX, gridY); break;
+                case 3: obstaculoBloco(meuMapa, ordem, paramTamanho, gridX, gridY); break;
+                case 4: obstaculoBarreira(meuMapa, ordem, paramTamanho, gridX, gridY, paramDirecao); break;
+                case 5: obstaculo(meuMapa, ordem, gridX, gridY); break;
+                case 6: blocoSombra(meuMapa, ordem, paramTamanho, gridX, gridY); break;
+                case 7: gerarOtimoZigZag(meuMapa, ordem, 0, 0, gridX, gridY); break;
             }
         }
     }
@@ -227,7 +281,7 @@ void mouse(int button, int state, int x, int y) {
             }
             // [+]
             if (checaColisao(x, glY, uiX + 40, paramY - 25, 30, 20)) {
-                if (paramTamanho < TAM_MAPA) paramTamanho++;
+                if (paramTamanho < ordem) paramTamanho++;
             }
             paramY -= 50; // Pula para a próxima linha
         }
@@ -262,23 +316,27 @@ void mouse(int button, int state, int x, int y) {
 
         // --- Botões Gerais ---
         float genY = 80;
-        if (checaColisao(x, glY, uiX, genY, 160, 30)) randomizaMapa(meuMapa, TAM_MAPA);
+        if (checaColisao(x, glY, uiX, genY, 160, 30)) {
+            iniciarSimulacao(); // Chama a função do main.c
+        }
+        genY -= 40;
+        if (checaColisao(x, glY, uiX, genY, 160, 30)) randomizaMapa(meuMapa, ordem);
         genY -= 40;
         if (checaColisao(x, glY, uiX, genY, 160, 30)) {
-            for(int i=0; i<TAM_MAPA; i++) 
-                for(int j=0; j<TAM_MAPA; j++) meuMapa[i][j] = 0;
+            for(int i=0; i<ordem; i++) 
+                for(int j=0; j<ordem; j++) meuMapa[i][j] = 0;
         }
     }
 
     glutPostRedisplay();
 }
 
-void init() {
+void init(int **mapa, int ordem) {
     glClearColor(0.1, 0.1, 0.1, 1.0);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluOrtho2D(0, LARGURA_JANELA, 0, ALTURA_JANELA);
     
     srand(42);
-    meuMapa = criaMapaZero(TAM_MAPA);
+    meuMapa = mapa;
 }

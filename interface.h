@@ -6,18 +6,26 @@
 // --- Constantes Visuais ---
 #define LARGURA_JANELA 800
 #define ALTURA_JANELA 800
-#define TAM_MAPA 50
 #define AREA_MAPA 600 // Pixels dedicados ao mapa
 
 // --- Protótipos (Funções que o main.c precisa enxergar) ---
 
 // Configurações iniciais do OpenGL e dados
-void init();
+void init(int** mapa, int ordem);
 
 // Função de desenho principal (Callback do GLUT)
-void display();
+void display(int ordem);
 
 // Função de clique do mouse (Callback do GLUT)
-void mouse(int button, int state, int x, int y);
+void mouse(int button, int state, int x, int y, int ordem);
+
+// Atualiza o caminho que deve ser desenhado na tela
+void setCaminhoVisualizacao(int *genes, int tamanhoIndividuo);
+
+// Função de Timer para animar
+void timer(int value);
+
+// Inicia a simulação (chamada pelo botão INICIAR)
+void iniciarSimulacao(void);
 
 #endif // INTERFACE_H

@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "mapa.h"       // Se tiver
+#include <GL/glut.h>
+#include "mapa.h"
 #include "Dijkstra.h"
 #include "Evolucao.h"
+#include "interface.h"
 
 #define POPSIZE 200     // Tamanho da população
 #define INDSIZE 100     // Tamanho do indivíduo (Combustível suficiente)
@@ -12,6 +14,21 @@
 #define PMT 5           // Probabilidade de mutação
 #define TAMANHOMAPA 10
 #define NUM_TENTATIVAS 10 // Quantas vezes vamos rodar do zero
+
+// --- ESTADO GLOBAL DA SIMULAÇÃO ---
+// Precisamos disso global para persistir entre os frames da animação
+int **mapa;
+int **dist;
+int **pop;
+int *MelhorIndividuoGlobal;
+int MelhorFitnessGlobal = 1e9;
+int dest_x, dest_y;
+
+// Contadores de Estado
+int geracao_atual = 0;
+int tentativa_atual = 0;
+int simulacao_rodando = 0; // 1 = Sim, 0 = Pausada/Terminou
+int simulacao_iniciada = 0; // 1 = Usuário clicou em INICIAR
 
 // Função auxiliar para imprimir o melhor caminho no final
 void ImprimirMelhorCaminho(int *ind, int tamanho, int **mapa) {
@@ -65,85 +82,149 @@ int **GerarPopulacao(int TamPop, int TamInd)
     return pop_;
 }
 
-int main()
+// --- Função que roda 1 passo da Evolução ---
+void passoDaSimulacao(int value) {
+    if (!simulacao_rodando) return;
+
+    // Se estamos no início de uma tentativa, inicializa a população
+    if (geracao_atual == 0) {
+        if (pop != NULL) { // Limpa anterior se existir
+             for(int i=0; i<POPSIZE; i++) free(pop[i]);
+             free(pop);
+        }
+        pop = GerarPopulacao(POPSIZE, INDSIZE);
+        printf("--- Iniciando Tentativa %d ---\n", tentativa_atual + 1);
+    }
+
+    // --- RODA 1 GERAÇÃO ---
+    // (Ajuste a taxa de mutação conforme sua lógica original se necessário)
+    ExecucaoAlgoritmo(pop, mapa, dist, POPSIZE, INDSIZE, TAMANHOMAPA, dest_x, dest_y, PCR, PMT);
+    
+    // --- ATUALIZA MELHOR LOCAL E GLOBAL ---
+    int melhor_fit_local = 1e9;
+    int id_melhor_local = 0;
+    
+    for(int i=0; i<POPSIZE; i++) {
+        int f = determinarfitness(pop[i], mapa, dist, INDSIZE, TAMANHOMAPA, dest_x, dest_y);
+        if(f < melhor_fit_local) {
+            melhor_fit_local = f;
+            id_melhor_local = i;
+        }
+    }
+
+    // Se achou um recorde global, atualiza e manda pra interface!
+    if (melhor_fit_local < MelhorFitnessGlobal) {
+        MelhorFitnessGlobal = melhor_fit_local;
+        
+        // Salva Globalmente
+        for(int k=0; k<INDSIZE; k++) MelhorIndividuoGlobal[k] = pop[id_melhor_local][k];
+        
+        printf("Novo Recorde: %d (Gen %d)\n", MelhorFitnessGlobal, geracao_atual);
+    }
+    
+    // Manda desenhar o melhor DESTA GERAÇÃO (para ver ele tentando)
+    // OU mande o MelhorIndividuoGlobal se quiser ver só o recordista
+    setCaminhoVisualizacao(pop[id_melhor_local], INDSIZE); 
+
+    // Avança contadores
+    geracao_atual++;
+
+    // Verifica fim da tentativa
+    if (geracao_atual >= NGEN) {
+        geracao_atual = 0;
+        tentativa_atual++;
+        
+        if (tentativa_atual >= NUM_TENTATIVAS) {
+            printf("\n=== SIMULAÇÃO FINALIZADA ===\n");
+            printf("Melhor Fitness Final: %d\n", MelhorFitnessGlobal);
+            simulacao_rodando = 0;
+            simulacao_iniciada = 0;
+            // Mostra o campeão final na tela
+            setCaminhoVisualizacao(MelhorIndividuoGlobal, INDSIZE);
+        }
+    }
+
+    // Redesenha a tela
+    glutPostRedisplay();
+
+    // Agenda o próximo passo daqui a 1ms (ou mais para ficar mais lento)
+    if (simulacao_rodando) {
+        glutTimerFunc(1, passoDaSimulacao, 0); // 1ms de delay
+    }
+}
+
+
+// --- CALLBACKS GLUT ---
+
+// Callback de desenho
+void desenhar() {
+    display(TAMANHOMAPA);
+    glutSwapBuffers();
+}
+
+// Callback de mouse
+void mouseCallback(int button, int state, int x, int y) {
+    mouse(button, state, x, y, TAMANHOMAPA);
+}
+
+// Função para iniciar a simulação (chamada pelo botão da interface)
+void iniciarSimulacao() {
+    if (!simulacao_iniciada) {
+        simulacao_iniciada = 1;
+        simulacao_rodando = 1;
+        geracao_atual = 0;
+        tentativa_atual = 0;
+        MelhorFitnessGlobal = 1e9;
+        printf("=== SIMULAÇÃO INICIADA ===\n");
+        glutTimerFunc(1, passoDaSimulacao, 0); // Começa o loop
+    }
+}
+
+int main(int argc, char** argv)
 {
     srand(time(NULL));
 
     // --- FASE 1: SETUP DO AMBIENTE (Executa 1 vez) ---
     
-    // Aloca e Lê Mapa
-    int **mapa = (int **)malloc(sizeof(int*) * TAMANHOMAPA);
+    // Aloca e Lê Mapa (ou gera aleatório se necessário)
+    mapa = (int **)malloc(sizeof(int*) * TAMANHOMAPA);
+    
     for (int i = 0; i < TAMANHOMAPA; i++)
     {
         mapa[i] = (int *)malloc(sizeof(int) * TAMANHOMAPA);
         for (int j = 0; j < TAMANHOMAPA; j++)
         {
-            scanf("%d", &mapa[i][j]);
+                mapa[i][j] = 0;
         }
     }
+    
 
     // Configura Destino e Dijkstra
-    int dest_x = TAMANHOMAPA - 1;
-    int dest_y = TAMANHOMAPA - 1;
-    int **dist = gerarMapaDist(TAMANHOMAPA, mapa, dest_x, dest_y);
+    dest_x = TAMANHOMAPA - 1;
+    dest_y = TAMANHOMAPA - 1;
+    dist = gerarMapaDist(TAMANHOMAPA, mapa, dest_x, dest_y);
 
-    // Variáveis para guardar o MELHOR DE TODOS (Recordista Global)
-    int MelhorFitnessGlobal = 1e9;
-    int *MelhorIndividuoGlobal = (int *)malloc(sizeof(int) * INDSIZE);
+    // Aloca o melhor indivíduo global
+    MelhorIndividuoGlobal = (int *)malloc(sizeof(int) * INDSIZE);
 
-
-    // --- FASE 2: LOOP DE TENTATIVAS (Multi-Start) ---
+    // --- FASE 2: INICIALIZA GLUT/OPENGL ---
     
-    for (int tentativa = 0; tentativa < NUM_TENTATIVAS; tentativa++) 
-    {
-        printf("\n=== TENTATIVA %d de %d ===\n", tentativa + 1, NUM_TENTATIVAS);
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+    glutInitWindowSize(LARGURA_JANELA, ALTURA_JANELA);
+    glutCreateWindow("Simulação Evolutiva - Algoritmo Genético");
+    
+    // Inicializa a interface (dados do OpenGL)
+    init(mapa, TAMANHOMAPA);
+    
+    // Registra callbacks
+    glutDisplayFunc(desenhar);          // Função de desenho
+    glutMouseFunc(mouseCallback);        // Função de mouse
+    // NÃO chama glutTimerFunc aqui - só quando o usuário clicar em INICIAR
+    
+    glutMainLoop(); // Aguarda eventos e redesenha
 
-        // 1. Inicializa População (Nova para cada tentativa)
-        int **pop = GerarPopulacao(POPSIZE, INDSIZE);
-        int taxa_atual = PMT;
-
-        // 2. Loop Evolutivo
-        for (int i = 0; i < NGEN; i++)
-        {
-            // Opcional: Não printar todas as gerações para não poluir o console, 
-            // ou printar só a cada 50 gerações
-            // if (i % 50 == 0) printf("."); 
-            
-            ExecucaoAlgoritmo(pop, mapa, dist, POPSIZE, INDSIZE, TAMANHOMAPA, dest_x, dest_y, PCR, taxa_atual);
-        }
-        
-        // 3. Encontrar o melhor desta tentativa específica
-        int melhor_fit_local = 1e9;
-        int id_melhor_local = 0;
-        
-        for(int i=0; i<POPSIZE; i++) {
-            int f = determinarfitness(pop[i], mapa, dist, INDSIZE, TAMANHOMAPA, dest_x, dest_y);
-            if(f < melhor_fit_local) {
-                melhor_fit_local = f;
-                id_melhor_local = i;
-            }
-        }
-
-        printf("\nMelhor desta tentativa: %d\n", melhor_fit_local);
-
-        // 4. Comparar com o Recorde Mundial
-        if (melhor_fit_local < MelhorFitnessGlobal) {
-            printf(">>> NOVO RECORDE GLOBAL! Atualizando de %d para %d\n", MelhorFitnessGlobal, melhor_fit_local);
-            MelhorFitnessGlobal = melhor_fit_local;
-            
-            // Salva os genes (copia manual pois o ponteiro pop vai ser liberado)
-            for(int k=0; k<INDSIZE; k++) {
-                MelhorIndividuoGlobal[k] = pop[id_melhor_local][k];
-            }
-        }
-
-        // 5. Limpeza da População desta tentativa
-        for (int i = 0; i < POPSIZE; i++) free(pop[i]);
-        free(pop);
-    }
-
-
-    // --- FASE 3: RESULTADOS E LIMPEZA FINAL ---
+    // --- FASE 3: LIMPEZA FINAL (ao sair do glutMainLoop) ---
 
     printf("\n\n==========================================\n");
     printf("RESULTADO FINAL APÓS %d TENTATIVAS:\n", NUM_TENTATIVAS);
@@ -151,8 +232,12 @@ int main()
     
     ImprimirMelhorCaminho(MelhorIndividuoGlobal, INDSIZE, mapa);
 
-    // Limpeza de estruturas estáticas
+    // Limpeza
     free(MelhorIndividuoGlobal);
+    if (pop != NULL) {
+        for(int i = 0; i < POPSIZE; i++) free(pop[i]);
+        free(pop);
+    }
 
     for (int i = 0; i < TAMANHOMAPA; i++) {
         free(mapa[i]);
