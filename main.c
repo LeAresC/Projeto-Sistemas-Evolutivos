@@ -153,6 +153,7 @@ void passoDaSimulacao(int value) {
         if (tentativa_atual >= NUM_TENTATIVAS) {
             printf("\n=== SIMULACAO FINALIZADA ===\n");
             printf("Melhor Fitness Final: %d\n", MelhorFitnessGlobal);
+            printf("Vai pela sombra!\n");
             simulacao_rodando = 0;
             simulacao_iniciada = 0;
             // Mostra o campeão final na tela
@@ -229,7 +230,7 @@ int main(int argc, char** argv)
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize(LARGURA_JANELA, ALTURA_JANELA);
-    glutCreateWindow("Simulação Evolutiva - Algoritmo Genético");
+    glutCreateWindow("Simulacao Evolutiva - Algoritmo Genetico - Melhor caminho na sombra");
     
     // Inicializa a interface (dados do OpenGL)
     init(mapa, TAMANHOMAPA);
