@@ -296,7 +296,7 @@ void display(int ordem) {
 
     // PARÂMETRO 3: DIREÇÃO (Apenas Ferramenta 4)
     if (ferramentaAtual == 4) {
-        char* dirs[] = {"Vertical", "Horizontal", "Diag. P.", "Diag. I."};
+        char* dirs[] = {"Horizontal", "Vertical", "Diagonal /", "Diagonal \\"};
         sprintf(buffer, "Dir: %s", dirs[paramDirecao]);
         desenhaTexto(uiX, uiY, buffer);
 
@@ -451,4 +451,18 @@ void resetarHistoricoFitness(void) {
         historicoFitnessMelhor[i] = 0;
         historicoFitnessMedia[i] = 0;
     }
+}
+
+// Callback de reshape para bloquear redimensionamento
+void reshape(int w, int h) {
+    // Força o tamanho da janela para o tamanho original
+    if (w != LARGURA_JANELA || h != ALTURA_JANELA) {
+        glutReshapeWindow(LARGURA_JANELA, ALTURA_JANELA);
+    }
+    
+    glViewport(0, 0, LARGURA_JANELA, ALTURA_JANELA);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(0, LARGURA_JANELA, 0, ALTURA_JANELA);
+    glMatrixMode(GL_MODELVIEW);
 }

@@ -34,4 +34,7 @@ void registrarFitnessGeracao(int fitnessMelhor, int fitnessMedia);
 // Reseta o histórico de fitness (chamado ao iniciar nova simulação)
 void resetarHistoricoFitness(void);
 
+// Callback de reshape para bloquear redimensionamento
+void reshape(int w, int h);
+
 #endif // INTERFACE_H

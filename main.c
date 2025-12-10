@@ -8,8 +8,8 @@
 #include "interface.h"
 
 #define POPSIZE 500     // Tamanho da população
-#define INDSIZE 50     // Tamanho do indivíduo 
-#define NGEN 1000        // Número de gerações
+#define INDSIZE 29     // Tamanho do indivíduo 
+#define NGEN 2000        // Número de gerações
 #define PCR 80          // Probabilidade de crossover
 #define PMT 3           // Probabilidade de mutação
 #define TAMANHOMAPA 15
@@ -133,6 +133,11 @@ void passoDaSimulacao(int value) {
         printf("Novo Recorde: %d (Gen %d)\n", MelhorFitnessGlobal, geracao_atual);
     }
     
+    // Imprime a geração a cada 100 gerações
+    if (geracao_atual % 100 == 0 && geracao_atual > 0) {
+        printf("Geracao: %d | Melhor: %d | Media: %d\n", geracao_atual, melhor_fit_local, media_fitness);
+    }
+    
     // Manda desenhar o melhor DESTA GERAÇÃO (para ver ele tentando)
     // OU mande o MelhorIndividuoGlobal se quiser ver só o recordista
     setCaminhoVisualizacao(pop[id_melhor_local], INDSIZE); 
@@ -146,7 +151,7 @@ void passoDaSimulacao(int value) {
         tentativa_atual++;
         
         if (tentativa_atual >= NUM_TENTATIVAS) {
-            printf("\n=== SIMULAÇÃO FINALIZADA ===\n");
+            printf("\n=== SIMULACAO FINALIZADA ===\n");
             printf("Melhor Fitness Final: %d\n", MelhorFitnessGlobal);
             simulacao_rodando = 0;
             simulacao_iniciada = 0;
@@ -187,7 +192,7 @@ void iniciarSimulacao() {
         tentativa_atual = 0;
         MelhorFitnessGlobal = 1e9;
         resetarHistoricoFitness();  // Limpa gráficos anteriores
-        printf("=== SIMULAÇÃO INICIADA ===\n");
+        printf("=== SIMULACAO INICIADA ===\n");
         glutTimerFunc(1, passoDaSimulacao, 0); // Começa o loop
     }
 }
@@ -232,6 +237,7 @@ int main(int argc, char** argv)
     // Registra callbacks
     glutDisplayFunc(desenhar);          // Função de desenho
     glutMouseFunc(mouseCallback);        // Função de mouse
+    glutReshapeFunc(reshape);            // Bloqueia redimensionamento
     // NÃO chama glutTimerFunc aqui - só quando o usuário clicar em INICIAR
     
     glutMainLoop(); // Aguarda eventos e redesenha
@@ -239,7 +245,7 @@ int main(int argc, char** argv)
     // --- FASE 3: LIMPEZA FINAL (ao sair do glutMainLoop) ---
 
     printf("\n\n==========================================\n");
-    printf("RESULTADO FINAL APÓS %d TENTATIVAS:\n", NUM_TENTATIVAS);
+    printf("RESULTADO FINAL APOS %d TENTATIVAS:\n", NUM_TENTATIVAS);
     printf("Melhor Fitness Global = %d\n", MelhorFitnessGlobal);
     
     ImprimirMelhorCaminho(MelhorIndividuoGlobal, INDSIZE, mapa);
