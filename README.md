@@ -121,7 +121,7 @@ Fitness = Penalidade Máxima + Distância Manhattan.
 Objetivo: Ensinar o indivíduo a permanecer dentro dos limites válidos.
 
 3. O "GPS" Evolutivo (Dijkstra)
-Para evitar que o algoritmo genético fique "cego" em labirintos complexos, executamos o algoritmo de Dijkstra uma única vez no início do programa (gerando um mapa de calor a partir do destino). Isso permite que indivíduos que ainda não chegaram ao final saibam a distância real (custo) que falta, ajudando-os a contornar obstáculos em forma de "U" ou evitar caminhos de lama.
+Para evitar que o algoritmo genético fique "cego" em labirintos complexos, executamos o algoritmo de Dijkstra uma única vez no início do programa (gerando um mapa de calor a partir do destino). Isso permite que indivíduos que ainda não chegaram ao final saibam a distância real (custo) que falta, ajudando-os a contornar obstáculos em forma de "U" ou evitar caminhos de alta luminosidade.
 
 ⚙️ Operadores Genéticos
 Seleção por Torneio (k=2): Dois indivíduos são escolhidos aleatoriamente; o de menor fitness vence e se torna pai. Isso preserva diversidade genética.
