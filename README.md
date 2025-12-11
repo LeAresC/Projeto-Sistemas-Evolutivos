@@ -106,7 +106,7 @@ Vitória (Chegou ao Destino):
 
 Fitness = Soma dos Custos dos Terrenos visitados.
 
-Objetivo: Otimizar o caminho (escolher "Rodovias" em vez de "Pântanos").
+Objetivo: Otimizar o caminho escolher caminhos com menos luminosidade
 
 Falha (Acabaram os passos sem chegar):
 
@@ -136,6 +136,17 @@ Altera aleatoriamente a direção de um passo.
 
 Inlcui estratégias de Mutação em Bloco para escapar de armadilhas locais.
 
+📊 Parâmetros Configuráveis
+
+Parâmetro,Descrição,Valor Recomendado
+POPSIZE,Tamanho da População,200 a 500
+INDSIZE,Tamanho do Genoma (Passos máximos),4x a 5x a largura do mapa
+NGEN,Número de Gerações,150 a 300
+PCR,Probabilidade de Crossover,80 (%)
+PMT,Probabilidade de Mutação,2 a 5 (%)
+NUM_TENTATIVAS,Execuções completas (Multi-Start),10
+
 📝 Autores
 Desenvolvido como parte de um estudo sobre Sistemas Evolutivos e Otimização Combinatória. 
+
 Luis Eduardo Aires Coimbra; Pedro Rodrigues Luiz Ferreira
