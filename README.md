@@ -137,4 +137,5 @@ Altera aleatoriamente a direção de um passo.
 Inlcui estratégias de Mutação em Bloco para escapar de armadilhas locais.
 
 📝 Autores
-Desenvolvido como parte de um estudo sobre Sistemas Evolutivos e Otimização Combinatória.
+Desenvolvido como parte de um estudo sobre Sistemas Evolutivos e Otimização Combinatória. 
+Luis Eduardo Aires Coimbra; Pedro Rodrigues Luiz Ferreira
