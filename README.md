@@ -75,12 +75,66 @@ RANDOMIZAR MAPA: Gera um terreno aleatório para testes rápidos.
 LIMPAR TUDO: Reseta o mapa para o estado vazio.
 
 🧠 Lógica Evolutiva (Backend)
-(Espaço reservado para a descrição do funcionamento do Algoritmo Genético, Crossover, Mutação e Função de Fitness)
 
-[A SER PREENCHIDO PELA EQUIPE DE BACKEND]
+🧬 Algoritmo Genético para Otimização de Caminhos (Pathfinding)
+Este projeto implementa um Algoritmo Genético (AG) em linguagem C para encontrar o caminho de menor custo em um grid bidimensional contendo obstáculos e terrenos com diferentes "pesos" (custos de travessia).
 
-Detalhes sobre a representação do cromossomo.
+O diferencial deste projeto é a utilização híbrida de um Algoritmo de Dijkstra para guiar a evolução, evitando que os indivíduos fiquem presos em mínimos locais (como caminhos geometricamente curtos, mas de alto custo).
 
-Explicação do cálculo de Dijkstra (heurística).
+🚀 Como Funciona
+O algoritmo simula o processo de seleção natural. Uma população de "indivíduos" (caminhos possíveis) evolui ao longo de gerações. Os melhores caminhos têm maior chance de se reproduzir e passar suas características para a próxima geração.
 
-Parâmetros genéticos utilizados (Taxa de mutação, tamanho da população, etc).
+1. Representação (O Genoma)
+Cada indivíduo é representado por um vetor de inteiros de tamanho fixo (INDSIZE), onde cada gene representa um movimento relativo:
+
+0: Cima
+
+1: Direita
+
+2: Baixo
+
+3: Esquerda
+
+O caminho real é construído simulando esses passos a partir do ponto de partida (0,0).
+
+2. Função de Fitness (Hierárquica)
+A avaliação dos indivíduos segue uma lógica estrita de penalidades para garantir a convergência correta. O objetivo é minimizar o valor do fitness.
+
+A hierarquia de avaliação é:
+
+Vitória (Chegou ao Destino):
+
+Fitness = Soma dos Custos dos Terrenos visitados.
+
+Objetivo: Otimizar o caminho (escolher "Rodovias" em vez de "Pântanos").
+
+Falha (Acabaram os passos sem chegar):
+
+Fitness = Penalidade Média + Distância Real até o Alvo (via Dijkstra).
+
+Objetivo: Incentivar a aproximação do alvo desviando de paredes.
+
+Morte (Bateu na parede ou saiu do mapa):
+
+Fitness = Penalidade Máxima + Distância Manhattan.
+
+Objetivo: Ensinar o indivíduo a permanecer dentro dos limites válidos.
+
+3. O "GPS" Evolutivo (Dijkstra)
+Para evitar que o algoritmo genético fique "cego" em labirintos complexos, executamos o algoritmo de Dijkstra uma única vez no início do programa (gerando um mapa de calor a partir do destino). Isso permite que indivíduos que ainda não chegaram ao final saibam a distância real (custo) que falta, ajudando-os a contornar obstáculos em forma de "U" ou evitar caminhos de lama.
+
+⚙️ Operadores Genéticos
+Seleção por Torneio (k=2): Dois indivíduos são escolhidos aleatoriamente; o de menor fitness vence e se torna pai. Isso preserva diversidade genética.
+
+Crossover de Dois Pontos (Two-Point): Dois pontos de corte são escolhidos no vetor dos pais. Os filhos herdam as pontas de um pai e o "miolo" do outro, preservando sequências de movimentos válidas.
+
+Mutação:
+
+Taxa baixa (ex: 2% a 5% por gene).
+
+Altera aleatoriamente a direção de um passo.
+
+Inlcui estratégias de Mutação em Bloco para escapar de armadilhas locais.
+
+📝 Autores
+Desenvolvido como parte de um estudo sobre Sistemas Evolutivos e Otimização Combinatória.
