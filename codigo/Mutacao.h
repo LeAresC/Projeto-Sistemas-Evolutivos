@@ -1,0 +1,1 @@
+void AplicarMutacao(int *individuo, int pmt, int indsize);

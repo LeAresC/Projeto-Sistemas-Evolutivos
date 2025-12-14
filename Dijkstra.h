@@ -1,1 +1,0 @@
-int **gerarMapaDist(int tamanhoMapa, int **mapa, int ini_x, int ini_y);

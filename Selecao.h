@@ -1,1 +1,0 @@
-int *torneio(int **pop, int popsize, int *fitness, int indsize);
