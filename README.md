@@ -147,6 +147,66 @@ Inlcui estratégias de Mutação em Bloco para escapar de armadilhas locais.
 | `PMT` | Probabilidade de Mutação | 2 a 5 (%) |
 | `NUM_TENTATIVAS` | Execuções completas (Multi-Start) | 10 |
 
+🛠️ Instruções de Compilação
+Para compilar e executar o Projeto-Sistemas-Evolutivos, você precisará do compilador GCC e das bibliotecas de desenvolvimento do FreeGLUT e do GLU.
+
+1. Pré-requisitos
+Compilador C: GCC (GNU Compiler Collection).
+
+Bibliotecas de Desenvolvimento:
+
+FreeGLUT: Para gerenciamento de janelas e eventos OpenGL (ex: freeglut.h, freeglut.lib).
+
+OpenGL & GLU: As bibliotecas gráficas padrão (ex: opengl32.lib, glu32.lib).
+
+Biblioteca Padrão C: Para funções como malloc, printf, time, etc.
+
+Se estiver usando MinGW ou MinGW-w64 no Windows, as bibliotecas geralmente vêm com o pacote, mas você pode precisar instalá-las se estiver em um ambiente Linux (via apt, yum, etc.).
+
+Exemplo de Instalação (Debian/Ubuntu):
+sudo apt update
+sudo apt install build-essential libglu1-mesa-dev freeglut3-dev
+
+2. Compilação (Usando o GCC)
+O projeto é composto por vários arquivos .c e .h. Você deve compilar todos os arquivos de implementação (.c) e vinculá-los com as bibliotecas necessárias.
+
+Comando de Compilação Único:
+
+Navegue até o diretório codigo/ e execute o seguinte comando:
+gcc -o main *.c -lglut -lglu32 -lopengl32 -lm
+
+Opção,Descrição
+-o main,Define o nome do arquivo de saída executável como evolucao (ou evolucao.exe no Windows).
+*.c,Lista todos os arquivos C do projeto.
+-lglut,Vincula com a biblioteca FreeGLUT.
+-lglu32,Vincula com a biblioteca GLU (GL Utility).
+-lopengl32,Vincula com a biblioteca principal do OpenGL.
+-lm,Vincula com a biblioteca matemática (pode ser necessário para algumas funções de C).
+
+3. Execução
+Após a compilação, o executável estará pronto.
+
+Certifique-se de que o executável (evolucao ou evolucao.exe) está na mesma pasta (ou em uma pasta listada na variável de ambiente PATH).
+
+Execute o programa:
+./evolucao
+
+4. Solução de Problemas Comuns (Windows/MinGW)
+Se você receber um erro como: The code execution cannot proceed because freeglut.dll was not found.
+
+Isso significa que a biblioteca dinâmica freeglut.dll (que já tem na pasta codigo.zip/codigo/) não está sendo encontrada pelo sistema operacional.
+
+Solução:
+
+Copie o arquivo freeglut.dll da sua pasta de projeto para:
+
+O mesmo diretório onde o evolucao.exe foi gerado (recomendado para fácil distribuição).
+
+Ou, para um diretório que esteja listado na variável de ambiente PATH do sistema.
+
+Dessa forma, o sistema encontrará a DLL necessária para executar a aplicação.
+
+
 📝 Autores
 Desenvolvido como parte de um estudo sobre Sistemas Evolutivos e Otimização Combinatória. 
 
